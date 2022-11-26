@@ -1,0 +1,80 @@
+Mysql
+#para armar una lista y tenerla a disposición. 
+CREATE VIEWS lieneal AS
+#Concatenar año y meses de las dordenes de venta,contando la cantidad de transacciones y sumando la cantidad de ventas de esas transacciones, se agrupa por año y mes y luego se ordena
+
+SELECT 
+    #CONCAT(YEAR(t1.OrderDate), "-", MONTH(t1.OrderDate)) as periodo,
+    COUNT( DISTINCT t1.SalesOrderID) as transacciones,
+    ROUND(SUM(t1.TotalDue),2) as ventas
+FROM salesorderheader as t1
+	GROUP BY YEAR(t1.OrderDate), MONTH(t1.OrderDate)
+    ORDER BY YEAR(t1.OrderDate), MONTH(t1.OrderDate)
+    
+#exportar la serie como CSV
+
+Python
+#importar librerias
+
+import numpy as np
+import pandas as pd
+from sklearn import linear_model
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+from IPython.display import HTML
+
+#cargar el dataset extraído de la BD
+data = pd.read_csv('/content/drive/MyDrive/Datos/lineal.csv', sep=";")
+data.head()
+
+#asignamos valores x e y del dataset
+X = data.iloc[:, 0].values
+y = data.iloc[:, 1].values
+# Here is the trick
+X = X.reshape(-1,1)
+
+#graficar nuve de puntos para hacer exploración de datos
+plt.scatter(X, y)
+plt.xlabel("Cantidad de Transacciones")
+plt.ylabel("Ventas")
+plt.ticklabel_format(useOffset=False, style='plain')
+plt.title('Relación mensual transacciones monto de ventas', loc='left')
+plt.show()
+
+#separa datos en entrenamiento y validación
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+
+#creamos el modelo de regresion lineal
+lr = linear_model.LinearRegression()
+
+#entrenar el modelo
+lr.fit(X_train, y_train)
+
+#obtenemos las predicicones
+Y_pred = lr.predict(X_test)
+
+#explorar graficamente el modelo obtenido
+
+plt.scatter(X_test, y_test)
+plt.plot(X_test, Y_pred, color='red', linewidth=3)
+plt.title('Regresión Lineal simple transacciones - ventas', loc='left')
+plt.xlabel('Cantidad de transacciones')
+plt.ylabel('Ventas')
+plt.show()
+
+#valores obtenidos
+
+#PENDIENTE
+print("Pendiente: ",lr.coef_)
+#INTERCEPTOR
+print("Interceptor: ",lr.intercept_)
+print("")
+
+# La ecuación de la regresion
+print("La ecuación de la Regresión es:")
+print("y = ", lr.coef_, "X ", "+", lr.intercept_)
+
+#presición del modelo
+print("Precisión del modelo: ",lr.score(X_train, y_train))
+
